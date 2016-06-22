@@ -1,0 +1,23 @@
+{
+  "name": "shudu",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lazy": "^1.0.11",
+    "mocha": "^2.5.3",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "debug": "^2.2.0",
+    "should": "^9.0.2"
+  }
+}
