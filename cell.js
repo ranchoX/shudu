@@ -51,8 +51,9 @@ Cell.prototype.setValue = function(val) {
         return;
     }
     this.val = val;
+    var self =this;
     this.limits.forEach(function(limit) {
-            limit.addValues(this);
+            limit.addValues(self);
         })
     delete this.values;
 }

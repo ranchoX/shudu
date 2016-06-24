@@ -8,46 +8,52 @@ function LimitBase(index, name) {
     this.index = index;
     this.cells = [];
     this.values = []; //已经存在的集合
-    this.emptyCells =[];
+    this.emptyCells = [];
 }
 LimitBase.prototype.push = function(cell) {
     this.cells.push(cell);
     if (cell.val) {
         this.values.push(cell.val)
-    }else{
+    } else {
         this.emptyCells.push(cell);
     }
+    //todo:最好能修改为name
+    cell.limits.push(this);
+    cell["limit" + this.name] = this;
 }
 LimitBase.prototype.addValues = function(cell) {
-        this.values.push(cell.val);
-        //将其他cell的可选值删除该值
-        this.cells.forEach(function(cell) {
-            cell.removeAlternateValue(cell.val);
-        })
-        var index = this.emptyCells.indexOf(cell);
-        this.emptyCells.splice(index,1);
-    }
-    // 隐性唯一候选数法 http://www.llang.net/sudoku/skill/2-2.html
-LimitBase.prototype.cal = function() {
-    this.uniqueAlternate();
-    this.coupleRemoveAlternate();
+    this.values.push(cell.val);
+    var index = this.emptyCells.indexOf(cell);
+    this.emptyCells.splice(index, 1);
+    //将其他cell的可选值删除该值
+    this.emptyCells.forEach(function(item) {
+        item.removeAlternateValue(cell.val);
+    })
+}
+
+LimitBase.prototype.cal = function(strategies) {
+    var self = this;
+    _.each(strategies, function(strategy) {
+        if (self[strategy]) {
+            self[strategy]();
+        }
+    })
+
     return this.checkCellValues();
 }
 LimitBase.prototype.uniqueAlternate = function() {
         var self = this;
-        this.cells.forEach(function(cell) {
-            if (!cell.val) {
-                var otherValues = [];
-                self.cells.forEach(function(other) {
-                    if (other != cell && (!other.val)) {
-                        otherValues = otherValues.concat(other.values);
-                    }
-                })
-                debug('limit uniqueAlternate:x:%s;y:%s;otherValues:%o;values:%o', cell.x, cell.y, _.unique(otherValues), cell.values)
-                var results = _.difference(cell.values, otherValues);
-                if (results.length == 1) {
-                    cell.setValue(results[0])
+        this.emptyCells.forEach(function(cell) {
+            var otherValues = [];
+            self.emptyCells.forEach(function(other) {
+                if (other != cell) {
+                    otherValues = otherValues.concat(other.values);
                 }
+            })
+            debug('limit uniqueAlternate:x:%s;y:%s;otherValues:%o;values:%o', cell.x, cell.y, _.unique(otherValues), cell.values)
+            var results = _.difference(cell.values, otherValues);
+            if (results.length == 1) {
+                cell.setValue(results[0])
             }
         })
     }
@@ -55,13 +61,11 @@ LimitBase.prototype.uniqueAlternate = function() {
 LimitBase.prototype.coupleRemoveAlternate = function() {
     var link = {};
     var self = this;
-    this.cells.forEach(function(cell) {
-        if (!cell.val) {
-            if (link[cell.values.length]) {
-                link[cell.values.length].push(cell)
-            } else {
-                link[cell.values.length] = [cell]
-            }
+    this.emptyCells.forEach(function(cell) {
+        if (link[cell.values.length]) {
+            link[cell.values.length].push(cell)
+        } else {
+            link[cell.values.length] = [cell]
         }
     })
     for (var key in link) {
@@ -73,7 +77,7 @@ LimitBase.prototype.coupleRemoveAlternate = function() {
             if (unionArr.length == link[key][0].values.length) {
                 debug("coupleRemoveAlternate:length:%s;values:%o", key, unionArr)
                     //将其他的备选结果删除 当前cells中的选择项
-                self.cells.forEach(function(cell) {
+                self.emptyCells.forEach(function(cell) {
                     if (link[key].indexOf(cell) == -1) {
                         debug("trigger remove values:x:%s,y%s,union:%o", cell.x, cell.y, unionArr)
                         cell.values = _.difference(cell.values, unionArr);
@@ -86,7 +90,7 @@ LimitBase.prototype.coupleRemoveAlternate = function() {
 }
 LimitBase.prototype.checkCellValues = function() {
     var result = false;
-    this.cells.forEach(function(cell) {
+    this.emptyCells.forEach(function(cell) {
         if (cell.cal()) {
             result = true;
         };
@@ -97,35 +101,67 @@ LimitBase.prototype.checkCellValues = function() {
 function CommonLimit() {
     LimitBase.apply(this, arguments)
 }
+utils.inherit(CommonLimit, LimitBase)
 
 function GroupLimit() {
     LimitBase.apply(this, arguments)
 }
+utils.inherit(GroupLimit, LimitBase)
 //候选数区块删减法
 GroupLimit.prototype.blockRemoveAlternate = function() {
-    var nums = _.difference(NUMS, this.values);
-    if (nums.length > 1) {
-        var emptyCells = _.filters
-        _.each(nums, function(num) {
-            
+    var self = this;
+    if (this.emptyCells.length > 1) {
+        var nums = _.difference(NUMS, this.values);
+        nums.forEach(function(num) {
+            var numCells = _.filter(self.emptyCells, function(cell) {
+                return cell.values.indexOf(num) > -1;
+            })
+            if (numCells.length > 1) {
+                //是否在同行或者同列
+                var x = numCells[0].x;
+                var y = numCells[0].y;
+                var isColumnFill = true;
+                var isRowFill = true;
+                _.each(numCells, function(cell) {
+                    if (cell.x != x) {
+                        isColumnFill = false;
+                    }
+                    if (cell.y != y) {
+                        isRowFill = false;
+                    }
+                })
+                var waitRemoveNumCells;
+                if (isColumnFill) {
+                    waitRemoveNumCells = numCells[0]["limitcolumn"]&&numCells[0]["limitcolumn"].emptyCells
+                } else if (isRowFill) {
+                    waitRemoveNumCells = numCells[0]["limitrow"]&&numCells[0]["limitrow"].emptyCells
+                }
+                _.each(waitRemoveNumCells, function(cell) {
+                    //不在group里面的cell 进行删除备选项
+                    if (numCells.indexOf(cell) == -1) {
+                        cell.removeAlternateValue(num);
+                    }
+                })
+            }
         })
     }
 
 }
-utils.inherit(CommonLimit, LimitBase)
+
 var limitManager = function() {
-    function cal(index) {
+    function cal(strategies, index) {
+        strategies = strategies || ['uniqueAlternate', 'coupleRemoveAlternate','blockRemoveAlternate']
         index = index || 0;
         index++;
         debug('第' + index + '次计算')
         var result = false;
         limits.forEach(function(item) {
-            if (item.cal()) {
+            if (item.cal(strategies)) {
                 result = true;
             };
         })
         if (result) {
-            cal(index);
+            cal(strategies, index);
         }
     }
     var limits = [];
@@ -137,7 +173,7 @@ var limitManager = function() {
             if (map[key]) {
                 return map[key]
             } else {
-                var limit = new CommonLimit(index, type)
+                var limit = type == "group" ? new GroupLimit(index, type) : new CommonLimit(index, type)
                 map[key] = limit;
                 limits.push(limit);
                 return limit;

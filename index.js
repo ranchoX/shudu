@@ -47,16 +47,9 @@ questions.forEach(function(item, rowIndex) {
         var x = columnIndex + 1;
         var cell = new Cell(x, y, val);
         cells.push(cell);
-        //对应的group
         var group;
-        // console.log("group index", cell.x, cell.y)
         var index = Math.ceil((cell.x) / 3) + (Math.ceil(cell.y / 3) - 1) * 3;
-        // console.log("index", index)
         group = LimitManager.get("group", index)
-            // console.log(group);
-        cell.limits.push(group);
-        cell.limits.push(rowLimit);
-        cell.limits.push(columnLimit)
         group.push(cell);
         rowLimit.push(cell);
         columnLimit.push(cell);
@@ -68,6 +61,6 @@ questions.forEach(function(item, rowIndex) {
 cells.forEach(function(cell) {
     cell.initAlternate();
 })
-LimitManager.cal();
+LimitManager.cal(['uniqueAlternate', 'coupleRemoveAlternate']);
 console.log("*************************************")
 LimitManager.print()

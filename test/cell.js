@@ -1,11 +1,10 @@
 var _ = require('underscore');
 var should = require('should')
-var Limit = require('../limit');
+var LimitManager = require('../limit');
 var Cell = require('../cell');
-var CommonLimit = Limit.CommonLimit;
 describe('==>cell ', function() {
-	it("初始化initAlternate",function(){
-		var limit1 = new CommonLimit(1, "column");
+    it("初始化initAlternate", function() {
+        var limit1 = LimitManager.get("row", 1);
         var cell = new Cell(1, 1, 4);
         limit1.push(cell);
         cell.limits.push(limit1);
@@ -17,8 +16,8 @@ describe('==>cell ', function() {
         limit1.push(cellTest);
         cellTest.limits.push(limit1);
 
-        var limit3 = new CommonLimit(3, "row");
-         var cell4 = new Cell(8, 3, 9);
+        var limit3 = LimitManager.get("row", 2);
+        var cell4 = new Cell(8, 3, 9);
         limit3.push(cell4);
         cell4.limits.push(limit3);
 
@@ -30,8 +29,8 @@ describe('==>cell ', function() {
         cellTest.limits.push(limit3);
 
         cellTest.initAlternate();
-        cellTest.values.should.eql([1,2,3,5,6,7,8])
+        cellTest.values.should.eql([1, 2, 3, 5, 6, 7, 8])
         limit1.values.should.eql([4])
         limit3.values.should.eql([9])
-	})
+    })
 })
