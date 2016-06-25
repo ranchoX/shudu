@@ -1,4 +1,3 @@
-var NUMS = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 var _ = require('underscore');
 var debug = require('debug')('shudu:cell');
 function Cell(x, y, val) {
@@ -6,29 +5,13 @@ function Cell(x, y, val) {
     this.y = y;
     if (val) {
         this.val = val;
+    }else{
+        this.values = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     }
     this.limits = [];
 
 }
-//唯一候选数法 http://www.llang.net/sudoku/skill/2-1.html
-Cell.prototype.initAlternate = function() {
-    if (this.val) {
-        return false;
-    }
-    // console.log("cal",this.x, this.y)
-    var values = [];
-    var self = this;
-    
-    this.limits.forEach(function(limit) {
-        values = values.concat(limit.values);
-    })
-    var results = _.unique(values);
-    //提供给group 网格的规律过滤使用
-    this.values = _.difference(NUMS, results);
-    debug("可能的值：x:%s;y:%s;values:%o", this.x, this.y, this.values)
-        // console.log(this.val)
-    return false;
-}
+
 Cell.prototype.cal = function() {
     if ((!this.val) && this.values.length == 1) {
         this.setValue(this.values[0]);
