@@ -8,7 +8,7 @@ var GroupLimit = require('../limits/groupLimit');
 var BaseLimit = require('../limits/limitbase');
 var RowLimit = require('../limits/rowLimit');
 var ColumnLimit = require('../limits/columnLimit');
-describe('===>cell limit', function() {
+describe.only('===>cell limit', function() {
     //cell unique
     it('生成唯一可能值', function() {
         var cellLimit = new CellLimit();
@@ -189,6 +189,119 @@ describe('===>cell limit', function() {
         cellLimit.xyRemove();
         cell32.values.should.eql([3, 8, 7, 9]);
     })
+    it('xyz 删除候选法(xyz yz xz 有2个在同一个group情况下，排除多个)', function() {
+        var cell22 = new Cell(2, 2);
+        cell22.values = [3, 4, 8];
+        var cell33 = new Cell(3, 3);
+        cell33.values = [4, 8];
+
+        var cell25 = new Cell(2, 5);
+        cell25.values = [3, 8];
+
+        var cell21 = new Cell(2, 1);
+        cell21.values = [8, 9, 6];
+
+        var cell23 = new Cell(2, 3);
+        cell23.values = [8, 3, 2];
+        var cellLimit = new CellLimit();
+        var rowLimit1 = new RowLimit(1);
+        var rowLimit2 = new RowLimit(2);
+        var rowLimit3 = new RowLimit(3);
+        var rowLimit5 = new RowLimit(4);
+        var columnLimit2 = new ColumnLimit(2);
+        var columnLimit3 = new ColumnLimit(3);
+
+        var groupLimit1 = new GroupLimit(1);
+        var groupLimit4 = new GroupLimit(4);
+        cellLimit.push(cell22)
+        cellLimit.push(cell33)
+        cellLimit.push(cell25)
+        cellLimit.push(cell21)
+        cellLimit.push(cell23)
+
+        rowLimit1.push(cell21)
+        rowLimit2.push(cell22)
+        rowLimit3.push(cell23)
+        rowLimit3.push(cell33)
+        rowLimit5.push(cell25)
+
+        columnLimit2.push(cell22)
+        columnLimit2.push(cell21)
+        columnLimit2.push(cell23)
+        columnLimit2.push(cell25)
+        columnLimit3.push(cell33)
+
+        groupLimit1.push(cell22)
+        groupLimit1.push(cell21)
+        groupLimit1.push(cell23)
+        groupLimit1.push(cell33)
+        groupLimit4.push(cell25)
+        cellLimit.xyzRemove();
+        cell21.values.should.eql([9, 6]);
+        cell23.values.should.eql([3, 2])
+    })
+
+    it('wxyz 删除候选法(wxyz yz xz wz有wz wxyz在同一个group情况下，排除多个)', function() {
+        var cell22 = new Cell(2, 2);
+        cell22.values = [2,3, 4, 8];
+        var cell33 = new Cell(3, 3);
+        cell33.values = [4, 8];
+
+        var cell25 = new Cell(2, 5);
+        cell25.values = [3, 8];
+
+        var cell27 = new Cell(2, 7);
+        cell27.values = [2, 8];
+
+        var cell21 = new Cell(2, 1);
+        cell21.values = [8, 9, 6];
+
+        var cell23 = new Cell(2, 3);
+        cell23.values = [8, 3, 2];
+        var cellLimit = new CellLimit();
+        var rowLimit1 = new RowLimit(1);
+        var rowLimit2 = new RowLimit(2);
+        var rowLimit3 = new RowLimit(3);
+        var rowLimit5 = new RowLimit(4);
+        var rowLimit7 = new RowLimit(7);
+        var columnLimit2 = new ColumnLimit(2);
+        var columnLimit3 = new ColumnLimit(3);
+
+        var groupLimit1 = new GroupLimit(1);
+        var groupLimit4 = new GroupLimit(4);
+        var groupLimit7 = new GroupLimit(7);
+        cellLimit.push(cell22)
+        cellLimit.push(cell33)
+        cellLimit.push(cell25)
+        cellLimit.push(cell21)
+        cellLimit.push(cell23)
+        cellLimit.push(cell27)
+
+        rowLimit1.push(cell21)
+        rowLimit2.push(cell22)
+        rowLimit3.push(cell23)
+        rowLimit3.push(cell33)
+        rowLimit5.push(cell25)
+        rowLimit5.push(cell27)
+
+        columnLimit2.push(cell22)
+        columnLimit2.push(cell21)
+        columnLimit2.push(cell23)
+        columnLimit2.push(cell25)
+        columnLimit2.push(cell27)
+        columnLimit3.push(cell33)
+
+        groupLimit1.push(cell22)
+        groupLimit1.push(cell21)
+        groupLimit1.push(cell23)
+        groupLimit1.push(cell33)
+        groupLimit4.push(cell25)
+
+        groupLimit7.push(cell27)
+        cellLimit.wxyzRemove();
+        cell21.values.should.eql([9, 6]);
+        cell23.values.should.eql([3, 2])
+    })
 })
 describe('==> base limit ', function() {
 
@@ -225,42 +338,42 @@ describe('==> base limit ', function() {
 
 })
 describe('==>group limit', function() {
-    it("blockRemoveAlternate", function() {
-        var groupLimit = new GroupLimit();
-        var rowLimit = new RowLimit();
-        var cell11 = new Cell(1, 1);
-        cell11.values = [3, 4];
+        it("blockRemoveAlternate", function() {
+            var groupLimit = new GroupLimit();
+            var rowLimit = new RowLimit();
+            var cell11 = new Cell(1, 1);
+            cell11.values = [3, 4];
 
-        var cell21 = new Cell(2, 1);
-        cell21.values = [3, 5];
+            var cell21 = new Cell(2, 1);
+            cell21.values = [3, 5];
 
-        var cell12 = new Cell(1, 2);
-        cell12.values = [8, 4];
+            var cell12 = new Cell(1, 2);
+            cell12.values = [8, 4];
 
-        var cell22 = new Cell(2, 2);
-        cell22.values = [9, 1];
+            var cell22 = new Cell(2, 2);
+            cell22.values = [9, 1];
 
-        groupLimit.push(cell11)
-        groupLimit.push(cell21)
-        groupLimit.push(cell12)
-        groupLimit.push(cell22)
+            groupLimit.push(cell11)
+            groupLimit.push(cell21)
+            groupLimit.push(cell12)
+            groupLimit.push(cell22)
 
-        var cell41 = new Cell(4, 1);
-        cell41.values = [3, 9, 8];
+            var cell41 = new Cell(4, 1);
+            cell41.values = [3, 9, 8];
 
-        var cell51 = new Cell(5, 1);
-        cell51.values = [3, 7, 6];
+            var cell51 = new Cell(5, 1);
+            cell51.values = [3, 7, 6];
 
-        rowLimit.push(cell11)
-        rowLimit.push(cell21)
-        rowLimit.push(cell41)
-        rowLimit.push(cell51)
-        groupLimit.blockRemoveAlternate();
-        cell41.values.should.eql([9, 8])
-        cell51.values.should.eql([7, 6])
+            rowLimit.push(cell11)
+            rowLimit.push(cell21)
+            rowLimit.push(cell41)
+            rowLimit.push(cell51)
+            groupLimit.blockRemoveAlternate();
+            cell41.values.should.eql([9, 8])
+            cell51.values.should.eql([7, 6])
+        })
     })
-})
-//因为limitmanager是单例模式所以不能一起运行
+    //因为limitmanager是单例模式所以不能一起运行
 describe('==>公开cal案例', function() {
     it("中等难度1", function() {
         var questions = [
@@ -278,7 +391,7 @@ describe('==>公开cal案例', function() {
         LimitManager.resolve();
         LimitManager.print()
     })
-    it.only('中等难度2', function() {
+    it('中等难度2', function() {
         var questions = [
             [0, 0, 6, 0, 5, 0, 3, 0, 4],
             [0, 0, 0, 0, 4, 0, 9, 0, 1],

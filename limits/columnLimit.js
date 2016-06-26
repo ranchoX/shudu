@@ -2,7 +2,7 @@ var utils = require('../utils');
 var _ = require('underscore');
 var LimitBase = require('./limitbase');
 var debug = require('debug')('shudu:limit:column');
-function ColumnLimit() {
+function ColumnLimit(index) {
     LimitBase.apply(this, arguments)
     this.name = "column";
 }

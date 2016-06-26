@@ -13,12 +13,12 @@ utils.inherit(GroupLimit, LimitBase)
 GroupLimit.prototype.blockRemoveAlternate = function() {
     var self = this;
     if (this.emptyCells.length > 1) {
-        var nums = _.difference([1,2,3,4,5,6,7,8,9], this.values);
+        var nums = _.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], this.values);
         nums.forEach(function(num) {
             var numCells = _.filter(self.emptyCells, function(cell) {
                 return cell.values.indexOf(num) > -1;
             })
-            if (numCells.length > 1) {
+            if (1 < numCells.length <= 3) {
                 //是否在同行或者同列
                 var x = numCells[0].x;
                 var y = numCells[0].y;
@@ -49,4 +49,4 @@ GroupLimit.prototype.blockRemoveAlternate = function() {
     }
 
 }
-module.exports=GroupLimit;
+module.exports = GroupLimit;

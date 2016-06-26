@@ -2,7 +2,7 @@ var _ = require('underscore');
 var debug = require('debug')('shudu:limit:base');
 
 function LimitBase(index) {
-    this.index=index;
+    this.index = index;
     this.cells = [];
     this.values = []; //已经存在的集合
     this.emptyCells = [];
@@ -39,7 +39,7 @@ LimitBase.prototype.cal = function(strategies) {
 }
 LimitBase.prototype.uniqueAlternate = function() {
         var self = this;
-        var waitRemoveCells=[];
+        var waitRemoveCells = [];
         this.emptyCells.forEach(function(cell) {
             var otherValues = [];
             self.emptyCells.forEach(function(other) {
@@ -49,11 +49,11 @@ LimitBase.prototype.uniqueAlternate = function() {
             })
             debug('limit uniqueAlternate:x:%s;y:%s;otherValues:%o;values:%o', cell.x, cell.y, _.unique(otherValues), cell.values)
             var results = _.difference(cell.values, otherValues);
-            if (results.length==1) {
-                waitRemoveCells.push({cell:cell,num:results[0]});
+            if (results.length == 1) {
+                waitRemoveCells.push({ cell: cell, num: results[0] });
             }
         })
-        _.each(waitRemoveCells,function(item){
+        _.each(waitRemoveCells, function(item) {
             item.cell.setValue(item.num);
         })
     }
@@ -96,5 +96,18 @@ LimitBase.prototype.checkCellValues = function() {
         };
     })
     return result;
+}
+LimitBase.prototype.resetCells = function() {
+    var emptyCells = [];
+    var values = [];
+    _.each(this.cells, function(cell) {
+        if (cell.val) {
+            values.push(cell.val);
+        } else {
+            emptyCells.push(cell);
+        }
+    })
+    this.emptyCells = emptyCells;
+    this.values = values;
 }
 module.exports = LimitBase;
