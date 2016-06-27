@@ -18,7 +18,10 @@ GroupLimit.prototype.blockRemoveAlternate = function() {
             var numCells = _.filter(self.emptyCells, function(cell) {
                 return cell.values.indexOf(num) > -1;
             })
-            if (1 < numCells.length <= 3) {
+            if (1 < numCells.length && numCells.length <= 3) {
+                if (!numCells[0]) {
+                    console.log(numCells)
+                }
                 //是否在同行或者同列
                 var x = numCells[0].x;
                 var y = numCells[0].y;

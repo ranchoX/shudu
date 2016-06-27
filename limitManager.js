@@ -69,6 +69,7 @@ var limitManager = function() {
                 return true;
             } else {
                 //猜想失败还原
+                console.log("-----还原-----",cell.x,cell.y)
                 cellLimit.restoreCellValues(cloneCells);
                 _.each(limits, function(limit) {
                     if (limit.resetCells) {
@@ -97,6 +98,7 @@ var limitManager = function() {
             return true;
         } else {
             if (cellLimit.hasAnswer()) {
+                console.log("￥￥￥￥￥￥￥￥子递归")
                 return guessResolve();
             } else {
                 return false;

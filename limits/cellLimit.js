@@ -193,7 +193,11 @@ CellLimit.prototype.xyzRemove = function() {
             return cell.x + ":" + cell.y;
         }))
         _.each(cells, function(cell) {
-            cell.removeAlternateValue(item.num);
+            //排除自己
+            if (cell != item.cell) {
+                cell.removeAlternateValue(item.num);
+            }
+
         })
     })
 }
@@ -264,7 +268,10 @@ CellLimit.prototype.wxyzRemove = function() {
             return cell.x + ":" + cell.y;
         }))
         _.each(cells, function(cell) {
-            cell.removeAlternateValue(item.num);
+            //排除自己
+            if (cell != item.cell) {
+                cell.removeAlternateValue(item.num);
+            }
         })
     })
 }
@@ -296,38 +303,39 @@ CellLimit.prototype.hasAnswer = function() {
     var re = true;
     _.each(this.emptyCells, function(cell) {
         if (cell.values.length == 0) {
+            console.log("该cell没有可能值了", cell.x, cell.y)
             re = false;
         }
     })
     return re;
 }
-CellLimit.prototype.cloneCellValues = function(){
-    var cells=[];
+CellLimit.prototype.cloneCellValues = function() {
+    var cells = [];
     _.each(this.emptyCells, function(cell) {
         cells.push({
-            x:cell.x,
-            y:cell.y,
-            values:_.clone(cell.values)
+            x: cell.x,
+            y: cell.y,
+            values: _.clone(cell.values)
         })
     })
     return cells;
 }
-CellLimit.prototype.restoreCellValues = function(cloneCells){
-    var self =this;
-    self.emptyCells=[];
-    _.each(self.cells,function(cell){
-        _.each(cloneCells,function(clone){
-            if (cell.x==clone.x&&cell.y==clone.y) {
+CellLimit.prototype.restoreCellValues = function(cloneCells) {
+    var self = this;
+    self.emptyCells = [];
+    _.each(self.cells, function(cell) {
+        _.each(cloneCells, function(clone) {
+            if (cell.x == clone.x && cell.y == clone.y) {
                 delete cell.val;
-                cell.values=clone.values;
+                cell.values = clone.values;
                 self.emptyCells.push(cell);
             }
         })
     })
-    
+
 }
-CellLimit.prototype.getSortCells=function(){
-    return _.sortBy(this.emptyCells,function(cell){
+CellLimit.prototype.getSortCells = function() {
+    return _.sortBy(this.emptyCells, function(cell) {
         return cell.values.length;
     })
 }
